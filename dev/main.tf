@@ -3,8 +3,8 @@ resource "azurerm_resource_group" "rg1" {
   location = var.location
 }
 
-module "ServicePrincipal" {
-  source = "./modules/serviceprincipal"
+module "Service_Principal" {
+  source = "../modules/serviceprincipal"
   service_principal_name = var.service_principal_name
 
   depends_on = [ azurerm_resource_group.rg1 ]
@@ -13,10 +13,10 @@ module "ServicePrincipal" {
 
 resource "azurerm_role_assignment" "rolespn" {
     scope = "/subscriptions/${var.subscription_id}"
-    principal_id = modules.Service_Principal.service_principal_object_id
+    principal_id = module.Service_Principal.service_principal_object_id
     role_definition_name = "Contributor"
 
-    depends_on = [ module.ServicePrincipal ]
+    depends_on = [ module.Service_Principal ]
 }
 
 module "keyvault" {
