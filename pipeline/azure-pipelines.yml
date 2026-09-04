@@ -1,0 +1,111 @@
+trigger:
+  branches:
+    include:
+      - master
+      - feature/*
+  paths:
+    include:
+      - azure-pipelines.yml
+      - dev
+      - staging
+      - modules
+
+stages:
+- stage: validate
+  jobs:
+  - job: tf_validate
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '1.9.8'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+        backendAzureRmUseEntraIdForAuthentication: false
+        backendServiceArm: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+        backendAzureRmResourceGroupName: 'terraform-state-rg'
+        backendAzureRmStorageAccountName: 'tfdevbackend2026'
+        backendAzureRmContainerName: 'tfstate'
+        backendAzureRmKey: 'dev.terraform.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+        
+
+- stage: Dev_deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+    - job: terraform_apply_dev
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+      - task: TerraformInstaller@1
+        inputs:
+          terraformVersion: '1.9.8'
+
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+          backendAzureRmUseEntraIdForAuthentication: false
+          backendServiceArm: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+          backendAzureRmResourceGroupName: 'terraform-state-rg'
+          backendAzureRmStorageAccountName: 'tfdevbackend2026'
+          backendAzureRmContainerName: 'tfstate'
+          backendAzureRmKey: 'dev.terraform.tfstate'
+
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'apply'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+          commandOptions: '--auto-approve'
+          environmentServiceNameAzureRM: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+
+- stage: stage_deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+    - job: terraform_apply_stage
+      pool:
+        vmImage: 'ubuntu-latest'
+
+      steps:
+      - task: TerraformInstaller@1
+        inputs:
+          terraformVersion: '1.9.8'
+
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/staging'
+          backendAzureRmUseEntraIdForAuthentication: false
+          backendServiceArm: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+          backendAzureRmResourceGroupName: 'terraform-state-rg'
+          backendAzureRmStorageAccountName: 'tfstagebackend2026'
+          backendAzureRmContainerName: 'tfstate'
+          backendAzureRmKey: 'stage.terraform.tfstate'
+      
+
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'apply'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/staging'
+          commandOptions: '--auto-approve'
+          environmentServiceNameAzureRM: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+
+      
+
+
+      

@@ -1,0 +1,71 @@
+trigger: none
+
+stages:
+
+- stage: Destroy_Dev
+  displayName: 'Destroy Dev'
+  jobs:
+  - job: terraform_destroy_dev
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '1.9.8'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+        backendAzureRmUseEntraIdForAuthentication: false
+        backendServiceArm: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+        backendAzureRmResourceGroupName: 'terraform-state-rg'
+        backendAzureRmStorageAccountName: 'tfdevbackend2026'
+        backendAzureRmContainerName: 'tfstate'
+        backendAzureRmKey: 'dev.terraform.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/dev'
+        commandOptions: '--auto-approve'
+        environmentServiceNameAzureRM: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+
+
+- stage: Destroy_Staging
+  displayName: 'Destroy Staging'
+  dependsOn: Destroy_Dev
+  condition: succeeded()
+
+  jobs:
+  - job: terraform_destroy_staging
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: '1.9.8'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/staging'
+        backendAzureRmUseEntraIdForAuthentication: false
+        backendServiceArm: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
+        backendAzureRmResourceGroupName: 'terraform-state-rg'
+        backendAzureRmStorageAccountName: 'tfstagebackend2026'
+        backendAzureRmContainerName: 'tfstate'
+        backendAzureRmKey: 'stage.terraform.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'destroy'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/staging'
+        commandOptions: '--auto-approve'
+        environmentServiceNameAzureRM: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'
