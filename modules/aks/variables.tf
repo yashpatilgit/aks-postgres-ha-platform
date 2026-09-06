@@ -28,3 +28,6 @@ variable "cluster_name" {
 variable "node_pool_name" {
   
 }
+
+
+variable "vnet_subnet_id" { type = string }

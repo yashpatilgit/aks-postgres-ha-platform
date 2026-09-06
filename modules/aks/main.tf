@@ -36,11 +36,14 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
     node_count = 1
     vm_size    = "Standard_D2as_v7"
     zones   = [1, 2, 3]
+    vnet_subnet_id = var.vnet_subnet_id
     auto_scaling_enabled = true
     max_count            = 3
     min_count            = 1
     os_disk_size_gb      = 30
     type                 = "VirtualMachineScaleSets"
+
+
     node_labels = {
       "nodepool-type"    = "system"
       "environment"      = "prod"
@@ -71,6 +74,8 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   network_profile {
       network_plugin = "azure"
       load_balancer_sku = "standard"
+      service_cidr       = "10.20.0.0/16"
+      dns_service_ip     = "10.20.0.10"
   }
 
 }

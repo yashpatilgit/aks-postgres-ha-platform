@@ -3,6 +3,16 @@ resource "azurerm_resource_group" "rg1" {
   location = var.location
 }
 
+
+module "networking" {
+  source              = "../modules/networking"
+  project_name        = var.cluster_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  depends_on = [azurerm_resource_group.rg1]
+}
+
 module "Service_Principal" {
   source = "../modules/serviceprincipal"
   service_principal_name = var.service_principal_name
@@ -10,6 +20,7 @@ module "Service_Principal" {
   depends_on = [ azurerm_resource_group.rg1 ]
 
 }
+
 
 resource "azurerm_role_assignment" "rolespn" {
     scope = "/subscriptions/${var.subscription_id}"
@@ -42,6 +53,8 @@ resource "azurerm_key_vault_secret" "kv-secret" {
 
 module "aks" {
   source                 = "../modules/aks"
+  vnet_subnet_id = module.networking.aks_subnet_id
+
   service_principal_name = module.Service_Principal.service_principal_name
   client_id              = module.Service_Principal.client_id
   client_secret          = module.Service_Principal.client_secret
@@ -50,7 +63,7 @@ module "aks" {
   cluster_name = var.cluster_name
   node_pool_name =  var.node_pool_name
 
-  depends_on = [module.Service_Principal]
+  depends_on = [module.Service_Principal, module.networking]
 
 }
 
