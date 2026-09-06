@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-cluster
+spec:
+  instances: 3
+  storage:
+    storageClass: managed-csi-premium
+    size: 10Gi
+  bootstrap:
+    initdb:
+      database: appdb
+      owner: appuser
