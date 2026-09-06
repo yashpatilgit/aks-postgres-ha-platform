@@ -1,8 +1,10 @@
+#resourcegroup
 resource "azurerm_resource_group" "rg1" {
   name= var.resource_group_name
   location = var.location
 }
 
+#modules
 module "Service_Principal" {
   source = "../modules/serviceprincipal"
   service_principal_name = var.service_principal_name
@@ -20,7 +22,7 @@ resource "azurerm_role_assignment" "rolespn" {
 }
 
 module "keyvault" {
-  source                      = "./modules/keyvault"
+  source                      = "../modules/keyvault"
   keyvault_name               = var.keyvault_name
   resource_group_name         = var.resource_group_name
   location                    = var.location
@@ -41,7 +43,7 @@ resource "azurerm_key_vault_secret" "kv-secret" {
 }
 
 module "aks" {
-  source                 = "./modules/aks"
+  source                 = "../modules/aks"
   service_principal_name = module.Service_Principal.service_principal_name
   client_id              = module.Service_Principal.client_id
   client_secret          = module.Service_Principal.client_secret

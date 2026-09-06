@@ -13,7 +13,7 @@ module "Service_Principal" {
 
 resource "azurerm_role_assignment" "rolespn" {
     scope = "/subscriptions/${var.subscription_id}"
-    principal_id = module.ServicePrincipal.service_principal_object_id
+    principal_id = module.Service_Principal.service_principal_object_id
     role_definition_name = "Contributor"
 
     depends_on = [ module.Service_Principal ]

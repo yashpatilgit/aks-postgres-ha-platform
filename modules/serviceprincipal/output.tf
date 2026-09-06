@@ -3,7 +3,7 @@ output "service_principal_name" {
   value = azuread_service_principal.main.display_name
 }
 
-output "service_principal_objectid" {
+output "service_principal_object_id" {
   description =  "The object id of service principal. Can be used to assign roles to user."
   value = azuread_service_principal.main.object_id
 }

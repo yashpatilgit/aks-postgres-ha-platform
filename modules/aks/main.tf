@@ -10,6 +10,13 @@ data "azurerm_kubernetes_service_versions" "current" {
   include_preview = false  
 }
 
+# Generate SSH key pair for AKS
+resource "tls_private_key" "aks_ssh" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+
 resource "azurerm_kubernetes_cluster" "aks-cluster" {
   name                = var.cluster_name
   location            = var.location
@@ -18,6 +25,11 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   kubernetes_version =  data.azurerm_kubernetes_service_versions.current.latest_version
   node_resource_group = "${var.resource_group_name}-nrg"
   oidc_issuer_enabled = true
+
+  node_provisioning_profile {
+  mode = "Manual"
+}
+
 
   default_node_pool {
     name       = var.node_pool_name
@@ -52,7 +64,7 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   linux_profile {
     admin_username = "ubuntu"
     ssh_key {
-        key_data = trimspace(file(var.ssh_public_key))
+        key_data = tls_private_key.aks_ssh.public_key_openssh
     }
   }
 
