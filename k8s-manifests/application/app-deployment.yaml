@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-reliability-app
+  labels:
+    app: postgres-reliability-app
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: postgres-reliability-app
+
+  template:
+    metadata:
+      labels:
+        app: postgres-reliability-app
+
+    spec:
+      containers:
+        - name: reliability-app
+          image: eclipse-temurin:21-jdk
+
+          env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: pg-cluster-app
+                  key: host
+
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: pg-cluster-app
+                  key: port
+
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pg-cluster-app
+                  key: dbname
+
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-cluster-app
+                  key: username
+
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-cluster-app
+                  key: password
+
+          command:
+            - /bin/bash
+            - -c
+
+          args:
+            - |
+              set -e
+
+              echo "Downloading PostgreSQL JDBC driver..."
+              curl -L \
+                -o /tmp/postgresql.jar \
+                https://jdbc.postgresql.org/download/postgresql-42.7.8.jar
+
+              echo "Compiling application..."
+              javac -cp /tmp/postgresql.jar /app/App.java -d /tmp
+
+              echo "Starting PostgreSQL Reliability Monitor..."
+              java -cp /tmp:/tmp/postgresql.jar App
+
+          volumeMounts:
+            - name: application-source
+              mountPath: /app
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+      volumes:
+        - name: application-source
+          configMap:
+            name: postgres-reliability-app

@@ -68,4 +68,5 @@ stages:
         command: 'destroy'
         workingDirectory: '$(System.DefaultWorkingDirectory)/staging'
         commandOptions: '--auto-approve'
+        
         environmentServiceNameAzureRM: 'Azure subscription 1(91dcf327-28bf-4b8d-aaca-e04dc624aa88)'

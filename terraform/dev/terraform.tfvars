@@ -1,0 +1,6 @@
+resource_group_name = "dev-rg"
+service_principal_name = "dev-env-sp"
+keyvault_name = "devkv-aksproj-01"
+subscription_id = "91dcf327-28bf-4b8d-aaca-e04dc624aa88"
+node_pool_name = "devnp"
+cluster_name = "dev-cluster"
