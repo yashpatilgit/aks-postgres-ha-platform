@@ -19,4 +19,4 @@ spec:
       memory: "512Mi"
       cpu: "500m"
   affinity:
-    podAntiAffinityType: required
+    podAntiAffinityType: preferred
