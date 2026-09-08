@@ -1,6 +1,0 @@
-resource_group_name = "stage-rg"
-service_principal_name = "stage-env-sp"
-keyvault_name = "stage-kv-01"
-subscription_id = "91dcf327-28bf-4b8d-aaca-e04dc624aa88"
-node_pool_name = "stagenp"
-cluster_name = "stage-cluster"
